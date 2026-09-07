@@ -1,0 +1,31 @@
+{
+  "name": "fieasto-main",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "frontend": "next dev -p 3000",
+    "backend": "nodemon backend/server.js",
+    "dev": "concurrently \"npm run frontend\" \"npm run backend\"",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.113.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "next": "16.3.3",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "babel-plugin-react-compiler": "1.0.0",
+    "concurrently": "^10.0.5",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.3",
+    "nodemon": "^3.1.14",
+    "tailwindcss": "^4"
+  }
+}
