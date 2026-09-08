@@ -12,6 +12,7 @@ export default function Home() {
       {/* Main Content */}
       <div className="main-content">
         {/* Header */}
+        <Header title="Inventory Hub" />
         <Header />
 
         {/* Dashboard Content */}
