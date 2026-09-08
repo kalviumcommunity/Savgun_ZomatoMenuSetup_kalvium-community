@@ -1,13 +1,10 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 
 const navItems = [
   {
     label: "Dashboard",
-    href: "/dashboard",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="3" width="7" height="7" rx="1" />
@@ -16,10 +13,10 @@ const navItems = [
         <rect x="14" y="14" width="7" height="7" rx="1" />
       </svg>
     ),
+    active: true,
   },
   {
     label: "Menu",
-    href: "/menu",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M3 6h18M3 12h18M3 18h18" />
@@ -28,7 +25,6 @@ const navItems = [
   },
   {
     label: "Pricing",
-    href: "/pricing",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <line x1="12" y1="1" x2="12" y2="23" />
@@ -38,7 +34,6 @@ const navItems = [
   },
   {
     label: "Orders",
-    href: "/orders",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
@@ -49,7 +44,6 @@ const navItems = [
   },
   {
     label: "Logs",
-    href: "/logs",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -62,7 +56,6 @@ const navItems = [
   },
   {
     label: "Settings",
-    href: "/settings",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="12" cy="12" r="3" />
@@ -73,8 +66,6 @@ const navItems = [
 ];
 
 export default function Sidebar() {
-  const pathname = usePathname();
-
   return (
     <aside className="sidebar">
       {/* Logo */}
@@ -90,22 +81,15 @@ export default function Sidebar() {
 
       {/* Navigation */}
       <nav className="sidebar-nav">
-        {navItems.map((item) => {
-          const isActive =
-            item.href === "/"
-              ? pathname === "/"
-              : pathname.startsWith(item.href);
-          return (
-            <Link
-              key={item.label}
-              href={item.href}
-              className={`sidebar-nav-item ${isActive ? "active" : ""}`}
-            >
-              {item.icon}
-              <span>{item.label}</span>
-            </Link>
-          );
-        })}
+        {navItems.map((item) => (
+          <div
+            key={item.label}
+            className={`sidebar-nav-item ${item.active ? "active" : ""}`}
+          >
+            {item.icon}
+            <span>{item.label}</span>
+          </div>
+        ))}
       </nav>
 
       {/* Bottom Restaurant Info */}

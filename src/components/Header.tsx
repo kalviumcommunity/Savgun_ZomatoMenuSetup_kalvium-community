@@ -1,25 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
-import ZomatoLoginModal from "./ZomatoLoginModal";
+import React from "react";
 
-interface HeaderProps {
-  title: string;
-}
-
-export default function Header({ title }: HeaderProps) {
-  const [isZomatoModalOpen, setIsZomatoModalOpen] = useState(false);
-
+export default function Header() {
   return (
     <header className="header">
       <div className="header-left">
-        <h1 className="header-title">{title}</h1>
-        <div 
-          className="header-sync cursor-pointer hover:opacity-80 transition-opacity"
-          onClick={() => setIsZomatoModalOpen(true)}
-        >
+        <h1 className="header-title">Inventory Hub</h1>
+        <div className="header-sync">
           <span className="header-sync-dot" />
-          <span>Sync with Zomato</span>
+          <span>Synced with Zomato, just now</span>
         </div>
       </div>
 
@@ -63,10 +53,6 @@ export default function Header({ title }: HeaderProps) {
           S
         </div>
       </div>
-      <ZomatoLoginModal 
-        isOpen={isZomatoModalOpen} 
-        onClose={() => setIsZomatoModalOpen(false)} 
-      />
     </header>
   );
 }
