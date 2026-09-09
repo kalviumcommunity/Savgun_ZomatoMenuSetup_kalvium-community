@@ -5,7 +5,7 @@ interface ZomatoLoginModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
+// Zomato Login Modal
 export default function ZomatoLoginModal({ isOpen, onClose }: ZomatoLoginModalProps) {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [otp, setOtp] = useState('');
