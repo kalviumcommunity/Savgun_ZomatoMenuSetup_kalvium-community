@@ -2,27 +2,44 @@ import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 import StatCard from "@/components/StatCard";
 import StockTable from "@/components/StockTable";
+import { getAuditLogs, getDishes } from "@/lib/db";
 
-export default function Home() {
+export default async function Home() {
+  const { data: dishesData = [] } = await getDishes();
+  const { data: auditLogsData } = await getAuditLogs(50);
+
+  const dishes = dishesData ?? [];
+  const auditLogs = auditLogsData ?? [];
+  const activeDishes = dishes.length;
+  const lowStockAlerts = dishes.filter(
+    (dish) => dish.zomato_status !== "In Stock"
+  ).length;
+  const ordersPlacedToday = auditLogs.length;
+  const revenueToday = dishes.reduce(
+    (sum, dish) => sum + Number(dish.base_price || 0),
+    0
+  );
+  const topSeller = dishes.reduce((best, dish) => {
+    if (!best) return dish;
+    return Number(dish.base_price || 0) > Number(best.base_price || 0)
+      ? dish
+      : best;
+  }, dishes[0] ?? null);
+
   return (
     <div style={{ display: "flex", minHeight: "100vh" }}>
-      {/* Sidebar */}
       <Sidebar />
 
-      {/* Main Content */}
       <div className="main-content">
-        {/* Header */}
         <Header title="Inventory Hub" />
 
-        {/* Dashboard Content */}
         <div className="dashboard-content">
-          {/* Stats Row */}
           <div className="stats-grid">
             <StatCard
               title="Active Dishes"
-              value="148"
+              value={activeDishes.toString()}
               subtitle="Synced live on Zomato"
-              linkText="Normal Limits"
+              linkText={activeDishes > 0 ? "Database sync enabled" : "No dishes found"}
               linkColor="green"
               iconColor="red"
               icon={
@@ -38,9 +55,13 @@ export default function Home() {
             />
             <StatCard
               title="Low Stock Alerts"
-              value="12"
+              value={lowStockAlerts.toString()}
               subtitle="Require kitchen attention"
-              linkText="8 items auto-locked"
+              linkText={
+                lowStockAlerts > 0
+                  ? `${lowStockAlerts} items need attention`
+                  : "All dishes within threshold"
+              }
               linkColor="red"
               iconColor="amber"
               icon={
@@ -56,9 +77,13 @@ export default function Home() {
             />
             <StatCard
               title="Orders Placed Today"
-              value="64"
-              subtitle="Zomato direct API"
-              linkText="+12% vs yesterday"
+              value={ordersPlacedToday.toString()}
+              subtitle="Recent audit events synced"
+              linkText={
+                ordersPlacedToday > 0
+                  ? `Across ${auditLogs.length} live updates`
+                  : "No recent order activity"
+              }
               linkColor="green"
               iconColor="green"
               icon={
@@ -74,9 +99,16 @@ export default function Home() {
             />
             <StatCard
               title="Revenue Today"
-              value="₹42,300"
+              value={`₹${revenueToday.toLocaleString("en-IN", {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0,
+              })}`}
               subtitle="Live estimated gross"
-              linkText="Top seller: Tandoori"
+              linkText={
+                topSeller
+                  ? `Top seller: ${topSeller.name}`
+                  : "No menu data available"
+              }
               linkColor="green"
               iconColor="orange"
               icon={
@@ -92,7 +124,6 @@ export default function Home() {
             />
           </div>
 
-          {/* Live Stock Monitoring Table */}
           <StockTable />
         </div>
       </div>
