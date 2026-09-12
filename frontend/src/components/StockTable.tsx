@@ -1,6 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { getDishes } from "@/lib/db";
 
 interface DishRow {
   id: string;
@@ -8,57 +9,9 @@ interface DishRow {
   zomatoId: string;
   category: string;
   liveStock: number;
-  zomatoStatus: "In Stock" | "Low Stock" | "Sold Out";
+  zomatoStatus: string;
   sysState: string;
 }
-
-const dishes: DishRow[] = [
-  {
-    id: "1",
-    name: "Tandoori Chicken (Full)",
-    zomatoId: "Zomato ID: KDM-1042",
-    category: "Appetizers",
-    liveStock: 28,
-    zomatoStatus: "In Stock",
-    sysState: "Idle",
-  },
-  {
-    id: "2",
-    name: "Paneer Butter Masala",
-    zomatoId: "Zomato ID: KDM-1043",
-    category: "Main Course",
-    liveStock: 3,
-    zomatoStatus: "Low Stock",
-    sysState: "Reordering...",
-  },
-  {
-    id: "3",
-    name: "Butter Naan",
-    zomatoId: "Zomato ID: KDM-1044",
-    category: "Breads",
-    liveStock: 140,
-    zomatoStatus: "In Stock",
-    sysState: "Idle",
-  },
-  {
-    id: "4",
-    name: "Mutton Rogan Josh",
-    zomatoId: "Zomato ID: KDM-1046",
-    category: "Main Course",
-    liveStock: 0,
-    zomatoStatus: "Sold Out",
-    sysState: "Idle",
-  },
-  {
-    id: "5",
-    name: "Gulab Jamun (Double)",
-    zomatoId: "Zomato ID: KDM-1048",
-    category: "Dessert",
-    liveStock: 12,
-    zomatoStatus: "Low Stock",
-    sysState: "Idle",
-  },
-];
 
 function getStatusClass(status: string) {
   switch (status) {
@@ -73,10 +26,62 @@ function getStatusClass(status: string) {
   }
 }
 
+function getPreviewHue(dishId: string, dishName: string) {
+  const seed = Array.from(dishId + dishName).reduce(
+    (total, char) => total + char.charCodeAt(0),
+    0
+  );
+
+  return seed % 360;
+}
+
 export default function StockTable() {
+  const [dishes, setDishes] = useState<DishRow[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadDishes() {
+      setLoading(true);
+
+      try {
+        const { data } = await getDishes();
+
+        if (!isMounted) {
+          return;
+        }
+
+        const mappedDishes = (data || []).map((dish: any) => ({
+          id: dish.id,
+          name: dish.name,
+          zomatoId: dish.zomato_id,
+          category: dish.categories?.name || "Uncategorized",
+          liveStock: dish.live_stock,
+          zomatoStatus: dish.zomato_status,
+          sysState: dish.sys_state,
+        }));
+
+        setDishes(mappedDishes);
+      } catch (error) {
+        console.error("[StockTable] Failed to load dishes:", error);
+        setDishes([]);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadDishes();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
     <div className="stock-section">
-      {/* Header */}
       <div className="stock-header">
         <h2 className="stock-title">Live Stock Monitoring</h2>
         <div className="stock-filters">
@@ -109,62 +114,69 @@ export default function StockTable() {
         </div>
       </div>
 
-      {/* Table */}
-      <table className="stock-table">
-        <thead>
-          <tr>
-            <th>Preview</th>
-            <th>Dish Name</th>
-            <th>Category</th>
-            <th>Live Stock</th>
-            <th>Zomato Status</th>
-            <th>Sys State</th>
-          </tr>
-        </thead>
-        <tbody>
-          {dishes.map((dish) => (
-            <tr key={dish.id}>
-              <td>
-                <div className="dish-preview">
-                  <div
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      background: `hsl(${parseInt(dish.id) * 60}, 30%, 85%)`,
-                      borderRadius: "8px",
-                    }}
-                  />
-                </div>
-              </td>
-              <td>
-                <div className="dish-name">{dish.name}</div>
-                <div className="dish-id">{dish.zomatoId}</div>
-              </td>
-              <td>
-                <span className="dish-category">{dish.category}</span>
-              </td>
-              <td>
-                <span className="dish-stock">{dish.liveStock}</span>
-              </td>
-              <td>
-                <span className={`status-badge ${getStatusClass(dish.zomatoStatus)}`}>
-                  <span className="dot" />
-                  {dish.zomatoStatus}
-                </span>
-              </td>
-              <td>
-                <span
-                  className={`sys-state ${
-                    dish.sysState === "Reordering..." ? "reordering" : ""
-                  }`}
-                >
-                  {dish.sysState}
-                </span>
-              </td>
+      {loading ? (
+        <div className="stock-empty-state">Loading live stock data...</div>
+      ) : dishes.length === 0 ? (
+        <div className="stock-empty-state">
+          No dishes are available yet. Add dishes in the Supabase catalog.
+        </div>
+      ) : (
+        <table className="stock-table">
+          <thead>
+            <tr>
+              <th>Preview</th>
+              <th>Dish Name</th>
+              <th>Category</th>
+              <th>Live Stock</th>
+              <th>Zomato Status</th>
+              <th>Sys State</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {dishes.map((dish) => (
+              <tr key={dish.id}>
+                <td>
+                  <div className="dish-preview">
+                    <div
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        background: `hsl(${getPreviewHue(dish.id, dish.name)}, 30%, 85%)`,
+                        borderRadius: "8px",
+                      }}
+                    />
+                  </div>
+                </td>
+                <td>
+                  <div className="dish-name">{dish.name}</div>
+                  <div className="dish-id">{dish.zomatoId}</div>
+                </td>
+                <td>
+                  <span className="dish-category">{dish.category}</span>
+                </td>
+                <td>
+                  <span className="dish-stock">{dish.liveStock}</span>
+                </td>
+                <td>
+                  <span className={`status-badge ${getStatusClass(dish.zomatoStatus)}`}>
+                    <span className="dot" />
+                    {dish.zomatoStatus}
+                  </span>
+                </td>
+                <td>
+                  <span
+                    className={`sys-state ${
+                      dish.sysState === "Reordering..." ? "reordering" : ""
+                    }`}
+                  >
+                    {dish.sysState}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }
