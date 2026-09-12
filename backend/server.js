@@ -1,6 +1,17 @@
 import express from "express";
 import cors from "cors";
-import { getDishes, updateDishStock } from "./lib/db.js";
+import { 
+  getDishes, 
+  updateDishStock,
+  getDishById,
+  updateDishPrice,
+  getCategories,
+  getPricingRules,
+  createPricingRule,
+  togglePricingRule,
+  getAuditLogs,
+  recordAuditLog
+} from "./lib/db.js";
 import { supabase, isSupabaseConfigured } from "./lib/supabaseClient.js";
 
 const app = express();
@@ -92,6 +103,104 @@ app.patch("/api/dishes", async (req, res) => {
       success: true,
       data: result.data,
     });
+  } catch (err) {
+    return res.status(400).json({ error: "Invalid request body", details: err.message });
+  }
+});
+
+app.get("/api/dishes/:id", async (req, res) => {
+  const result = await getDishById(req.params.id);
+  if (result.error) {
+    return res.status(500).json({ error: result.error.message || result.error });
+  }
+  return res.status(200).json({ data: result.data });
+});
+
+app.patch("/api/dishes/:id/price", async (req, res) => {
+  try {
+    const { dishName, oldPrice, newPrice, actor, actorRole } = req.body;
+    if (newPrice === undefined) {
+      return res.status(400).json({ error: "Missing required field: newPrice" });
+    }
+    const result = await updateDishPrice(req.params.id, dishName, oldPrice, newPrice, actor, actorRole);
+    if (result.error) {
+      return res.status(500).json({ error: result.error.message || result.error });
+    }
+    return res.status(200).json({ success: true, data: result.data });
+  } catch (err) {
+    return res.status(400).json({ error: "Invalid request body", details: err.message });
+  }
+});
+
+// ------------------------------------------------------------------------------
+// CATEGORIES ROUTES
+// ------------------------------------------------------------------------------
+app.get("/api/categories", async (req, res) => {
+  const result = await getCategories();
+  if (result.error) {
+    return res.status(500).json({ error: result.error.message || result.error });
+  }
+  return res.status(200).json({ data: result.data, isMock: result.isMock });
+});
+
+// ------------------------------------------------------------------------------
+// PRICING RULES ROUTES
+// ------------------------------------------------------------------------------
+app.get("/api/pricing-rules", async (req, res) => {
+  const result = await getPricingRules();
+  if (result.error) {
+    return res.status(500).json({ error: result.error.message || result.error });
+  }
+  return res.status(200).json({ data: result.data, isMock: result.isMock });
+});
+
+app.post("/api/pricing-rules", async (req, res) => {
+  try {
+    const result = await createPricingRule(req.body);
+    if (result.error) {
+      return res.status(500).json({ error: result.error.message || result.error });
+    }
+    return res.status(201).json({ success: true, data: result.data });
+  } catch (err) {
+    return res.status(400).json({ error: "Invalid request body", details: err.message });
+  }
+});
+
+app.patch("/api/pricing-rules/:id/toggle", async (req, res) => {
+  try {
+    const { isActive } = req.body;
+    if (isActive === undefined) {
+      return res.status(400).json({ error: "Missing required field: isActive" });
+    }
+    const result = await togglePricingRule(req.params.id, isActive);
+    if (result.error) {
+      return res.status(500).json({ error: result.error.message || result.error });
+    }
+    return res.status(200).json({ success: true, data: result.data });
+  } catch (err) {
+    return res.status(400).json({ error: "Invalid request body", details: err.message });
+  }
+});
+
+// ------------------------------------------------------------------------------
+// AUDIT LOGS ROUTES
+// ------------------------------------------------------------------------------
+app.get("/api/audit-logs", async (req, res) => {
+  const limit = req.query.limit ? parseInt(req.query.limit, 10) : 20;
+  const result = await getAuditLogs(limit);
+  if (result.error) {
+    return res.status(500).json({ error: result.error.message || result.error });
+  }
+  return res.status(200).json({ data: result.data, isMock: result.isMock });
+});
+
+app.post("/api/audit-logs", async (req, res) => {
+  try {
+    const result = await recordAuditLog(req.body);
+    if (result.error) {
+      return res.status(500).json({ error: result.error.message || result.error });
+    }
+    return res.status(201).json({ success: true, data: result.data });
   } catch (err) {
     return res.status(400).json({ error: "Invalid request body", details: err.message });
   }
