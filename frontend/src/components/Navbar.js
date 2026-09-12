@@ -21,7 +21,7 @@ export default function Navbar() {
           </Link>
         </div>
 
-        <Link href="#cta" className="navbar__cta" id="navbar-cta">
+        <Link href="/login" className="navbar__cta" id="navbar-cta">
           Sync your Zomato
         </Link>
       </div>

@@ -1,24 +1,23 @@
-import React, { useState } from 'react';
-import Image from 'next/image';
+"use client";
+
+import React, { useState } from "react";
+import Image from "next/image";
 
 interface ZomatoLoginModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
-// Zomato Login Modal
+
 export default function ZomatoLoginModal({ isOpen, onClose }: ZomatoLoginModalProps) {
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [otp, setOtp] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [otp, setOtp] = useState("");
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-[100] flex bg-black/50 backdrop-blur-sm">
       <div className="m-auto flex w-[1000px] max-w-[95vw] h-[600px] max-h-[90vh] rounded-2xl overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-300">
-        
-        {/* Left Side - Dark */}
         <div className="w-1/2 bg-[#1d1b1a] p-10 flex flex-col justify-between relative text-white">
-          {/* Logo */}
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-[#E23744] rounded-lg flex items-center justify-center text-sm font-bold shadow-md">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -32,18 +31,17 @@ export default function ZomatoLoginModal({ isOpen, onClose }: ZomatoLoginModalPr
             <span className="text-xl font-bold tracking-tight">Fieasto</span>
           </div>
 
-          {/* Center Image & Text */}
           <div className="flex flex-col items-center mt-6">
             <div className="w-64 h-64 rounded-3xl overflow-hidden border-4 border-white/10 shadow-2xl relative">
-              <Image 
-                src="/chef_plating.jpg" 
-                alt="Chef plating food" 
-                fill 
+              <Image
+                src="/chef_plating.jpg"
+                alt="Chef plating food"
+                fill
                 className="object-cover"
                 unoptimized
               />
             </div>
-            
+
             <div className="mt-8 text-center px-4">
               <h2 className="text-[28px] leading-tight font-extrabold mb-3">
                 Connect your Zomato account in seconds
@@ -54,7 +52,6 @@ export default function ZomatoLoginModal({ isOpen, onClose }: ZomatoLoginModalPr
             </div>
           </div>
 
-          {/* Footer */}
           <div className="flex justify-center items-center gap-2 text-xs text-gray-500 pb-2">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1BA672" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
@@ -64,10 +61,8 @@ export default function ZomatoLoginModal({ isOpen, onClose }: ZomatoLoginModalPr
           </div>
         </div>
 
-        {/* Right Side - Light */}
         <div className="w-1/2 bg-[#fafafa] p-10 flex flex-col items-center justify-center relative">
-          {/* Close Button */}
-          <button 
+          <button
             onClick={onClose}
             className="absolute top-6 right-6 text-gray-400 hover:text-gray-600 transition-colors"
           >
@@ -77,7 +72,6 @@ export default function ZomatoLoginModal({ isOpen, onClose }: ZomatoLoginModalPr
             </svg>
           </button>
 
-          {/* Form Card */}
           <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 w-full max-w-[400px]">
             <h2 className="text-2xl font-bold text-gray-900 mb-1">Log in to Fieasto</h2>
             <p className="text-sm text-gray-500 mb-8">
@@ -85,7 +79,6 @@ export default function ZomatoLoginModal({ isOpen, onClose }: ZomatoLoginModalPr
             </p>
 
             <div className="space-y-5">
-              {/* Phone Number */}
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1.5">
                   Phone Number
@@ -97,9 +90,9 @@ export default function ZomatoLoginModal({ isOpen, onClose }: ZomatoLoginModalPr
                       <polyline points="6 9 12 15 18 9"></polyline>
                     </svg>
                   </div>
-                  <input 
-                    type="text" 
-                    placeholder="98765 43210" 
+                  <input
+                    type="text"
+                    placeholder="98765 43210"
                     className="flex-1 px-3 py-2.5 text-sm outline-none w-full"
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
@@ -107,7 +100,6 @@ export default function ZomatoLoginModal({ isOpen, onClose }: ZomatoLoginModalPr
                 </div>
               </div>
 
-              {/* OTP */}
               <div>
                 <div className="flex justify-between items-center mb-1.5">
                   <label className="block text-xs font-semibold text-gray-700">
@@ -117,36 +109,32 @@ export default function ZomatoLoginModal({ isOpen, onClose }: ZomatoLoginModalPr
                     Resend in 0:28
                   </span>
                 </div>
-                <input 
-                  type="text" 
-                  placeholder="4 1 8 0 |" 
+                <input
+                  type="text"
+                  placeholder="4 1 8 0 |"
                   className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-400 transition-all font-medium tracking-[0.2em]"
                   value={otp}
                   onChange={(e) => setOtp(e.target.value)}
                 />
               </div>
 
-              {/* Login Button */}
-              <button 
+              <button
                 className="w-full bg-[#E23744] hover:bg-[#d6313d] text-white font-semibold py-3 rounded-lg text-sm transition-colors mt-2"
               >
                 Login to Merchant Suite
               </button>
             </div>
 
-            {/* OTP Status */}
             <div className="flex items-center justify-center gap-1.5 mt-6 text-xs text-gray-500">
-              <span className="text-yellow-500 text-sm">🔒</span>
+              <span className="text-yellow-500 text-sm">≡ƒöÆ</span>
               OTP sent to your Zomato-registered merchant number.
             </div>
           </div>
 
-          {/* Footer Contact Support */}
           <div className="absolute bottom-8 text-xs text-gray-500">
             Need help logging in? <a href="#" className="text-[#E23744] font-medium hover:underline">Contact Support</a>
           </div>
         </div>
-
       </div>
     </div>
   );
