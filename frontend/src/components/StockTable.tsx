@@ -150,8 +150,8 @@ export default function StockTable() {
     }));
   };
 
-  const saveDish = async (dish: DishRow) => {
-    const draft = drafts[dish.id] ?? { liveStock: dish.liveStock, sysState: dish.sysState };
+  const saveDish = async (dish: DishRow, draftOverride?: DishDraft) => {
+    const draft = draftOverride ?? drafts[dish.id] ?? { liveStock: dish.liveStock, sysState: dish.sysState };
 
     try {
       setSavingId(dish.id);
@@ -167,7 +167,28 @@ export default function StockTable() {
         throw sysStateResult.error;
       }
 
-      await loadDishes();
+      setDishes((current) =>
+        current.map((item) => {
+          if (item.id !== dish.id) {
+            return item;
+          }
+
+          return {
+            ...item,
+            liveStock: Number(stockResult.data?.live_stock ?? draft.liveStock),
+            zomatoStatus: stockResult.data?.zomato_status ?? item.zomatoStatus,
+            sysState: sysStateResult.data?.sys_state ?? draft.sysState,
+          };
+        })
+      );
+
+      setDrafts((current) => ({
+        ...current,
+        [dish.id]: {
+          liveStock: Number(stockResult.data?.live_stock ?? draft.liveStock),
+          sysState: sysStateResult.data?.sys_state ?? draft.sysState,
+        },
+      }));
     } catch (err) {
       console.error("[StockTable] Failed to update dish:", err);
       setError(
@@ -428,11 +449,27 @@ export default function StockTable() {
                       type="number"
                       min={0}
                       value={draft.liveStock}
-                      onChange={(event) =>
-                        updateDraft(dish.id, {
-                          liveStock: Math.max(0, Number(event.target.value) || 0),
-                        })
-                      }
+                      onChange={(event) => {
+                        const nextLiveStock = Math.max(0, Number(event.target.value) || 0);
+                        const nextDraft = {
+                          ...draft,
+                          liveStock: nextLiveStock,
+                        };
+
+                        setDrafts((current) => ({
+                          ...current,
+                          [dish.id]: nextDraft,
+                        }));
+                      }}
+                      onBlur={() => {
+                        void saveDish(dish, drafts[dish.id] ?? draft);
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") {
+                          event.preventDefault();
+                          void saveDish(dish, drafts[dish.id] ?? draft);
+                        }
+                      }}
                       className="stock-input"
                     />
                   </td>
@@ -445,9 +482,19 @@ export default function StockTable() {
                   <td>
                     <select
                       value={draft.sysState}
-                      onChange={(event) =>
-                        updateDraft(dish.id, { sysState: event.target.value })
-                      }
+                      onChange={(event) => {
+                        const nextDraft = {
+                          ...draft,
+                          sysState: event.target.value,
+                        };
+
+                        setDrafts((current) => ({
+                          ...current,
+                          [dish.id]: nextDraft,
+                        }));
+
+                        void saveDish(dish, nextDraft);
+                      }}
                       className="stock-select"
                     >
                       {SYS_STATE_OPTIONS.map((option) => (
