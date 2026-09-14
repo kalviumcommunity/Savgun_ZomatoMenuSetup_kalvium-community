@@ -8,6 +8,7 @@
     "start": "node server.js"
   },
   "dependencies": {
+    "@faker-js/faker": "^10.6.0",
     "@supabase/supabase-js": "^2.113.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",

@@ -1,0 +1,8 @@
+node_modules
+.next
+.env.development.local
+.env.test.local
+.env.production.local
+.git
+.gitignore
+*.log
