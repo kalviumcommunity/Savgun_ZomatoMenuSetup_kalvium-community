@@ -9,6 +9,10 @@
     "build": "cd frontend && npm run build",
     "start": "cd frontend && npm run start",
     "install:all": "cd frontend && npm install && cd ../backend && npm install",
-    "lint": "cd frontend && npm run lint"
+    "lint": "cd frontend && npm run lint",
+    "postinstall": "prisma skills sync || exit 0"
+  },
+  "devDependencies": {
+    "prisma": "^8.0.0-rc.14"
   }
 }
