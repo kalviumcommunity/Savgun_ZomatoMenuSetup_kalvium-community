@@ -143,7 +143,7 @@ export default function Home() {
             />
           </div>
 
-          <StockTable onDishesChange={setDishes} />
+          <StockTable />
         </div>
       </div>
     </div>
