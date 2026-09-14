@@ -12,6 +12,20 @@ import { supabase, isSupabaseConfigured } from "./supabaseClient";
 // 1. DISHES / MENU ITEMS
 // ------------------------------------------------------------------------------
 
+export function getDishStockStatus(liveStock) {
+  const normalizedStock = Math.max(0, Number(liveStock ?? 0));
+
+  if (normalizedStock === 0) {
+    return "Sold Out";
+  }
+
+  if (normalizedStock < 10) {
+    return "Low Stock";
+  }
+
+  return "In Stock";
+}
+
 /**
  * Fetch all dishes along with their category and active pricing rule
  */
@@ -78,6 +92,44 @@ export async function getDishById(id) {
   return { data, error };
 }
 
+export async function createDish(dishData = {}) {
+  if (!isSupabaseConfigured()) return { data: null, error: "Not configured" };
+
+  try {
+    const payload = {
+      ...dishData,
+      name: String(dishData.name || "").trim(),
+      zomato_id: String(dishData.zomato_id || "").trim(),
+      category_id: dishData.category_id || null,
+      description: dishData.description || "",
+      base_price: Number(dishData.base_price ?? 0),
+      live_stock: Math.max(0, Number(dishData.live_stock ?? 0)),
+      min_stock_threshold: Math.max(0, Number(dishData.min_stock_threshold ?? 5)),
+      sys_state: dishData.sys_state || "Idle",
+      zomato_status: getDishStockStatus(dishData.live_stock ?? 0),
+      is_available: dishData.is_available ?? true,
+      dish_emoji: dishData.dish_emoji || "🍛",
+    };
+
+    if (!payload.name || !payload.zomato_id) {
+      return {
+        data: null,
+        error: new Error("Dish name and Zomato ID are required."),
+      };
+    }
+
+    const { data, error } = await supabase
+      .from("dishes")
+      .insert([payload])
+      .select()
+      .single();
+
+    return { data, error };
+  } catch (err) {
+    return { data: null, error: err };
+  }
+}
+
 /**
  * Update a dish's live stock count
  */
@@ -85,9 +137,32 @@ export async function updateDishStock(dishId, newStock, actorName = "Chef / Mana
   if (!isSupabaseConfigured()) return { data: null, error: "Not configured" };
 
   try {
+    const normalizedStock = Math.max(0, parseInt(newStock, 10));
+    const stockStatus = getDishStockStatus(normalizedStock);
+
     const { data, error } = await supabase
       .from("dishes")
-      .update({ live_stock: Math.max(0, parseInt(newStock, 10)) })
+      .update({
+        live_stock: normalizedStock,
+        zomato_status: stockStatus,
+      })
+      .eq("id", dishId)
+      .select()
+      .single();
+
+    return { data, error };
+  } catch (err) {
+    return { data: null, error: err };
+  }
+}
+
+export async function updateDishSysState(dishId, sysState) {
+  if (!isSupabaseConfigured()) return { data: null, error: "Not configured" };
+
+  try {
+    const { data, error } = await supabase
+      .from("dishes")
+      .update({ sys_state: sysState })
       .eq("id", dishId)
       .select()
       .single();

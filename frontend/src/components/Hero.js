@@ -23,11 +23,8 @@ export default function Hero() {
           </p>
 
           <div className="hero__actions" id="hero-actions">
-            <Link href="/dashboard" className="btn-primary" id="btn-get-started">
+            <Link href="/login" className="btn-primary" id="btn-get-started">
               Get Started for Free
-            </Link>
-            <Link href="#demo" className="btn-secondary" id="btn-demo">
-              Schedule a Demo
             </Link>
           </div>
         </div>
