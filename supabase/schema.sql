@@ -17,7 +17,7 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- ==============================================================================
 -- 1. DROP EXISTING TABLES (Clean Re-run Support)
 -- ==============================================================================
-DROP VIEW IF EXISTS v_active_menu CASCADE;
+DROP VIEW IF EXISTS v_active_menu CASCADE; 
 DROP VIEW IF EXISTS v_low_stock_dishes CASCADE;
 DROP TABLE IF EXISTS inventory_logs CASCADE;
 DROP TABLE IF EXISTS audit_logs CASCADE;
@@ -75,6 +75,7 @@ CREATE TABLE pricing_rules (
 );
 
 -- 2.4 Live Audit Logs Table
+
 CREATE TABLE audit_logs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     dish_id UUID REFERENCES dishes(id) ON DELETE SET NULL,
