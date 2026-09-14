@@ -72,6 +72,19 @@ export async function getDishById(id) {
   return { data, error };
 }
 
+export async function createDish(dishData) {
+  if (!isSupabaseConfigured()) return { data: null, error: "Not configured" };
+
+  const { data, error } = await supabase
+    .from("dishes")
+    .insert([dishData])
+    .select()
+    .single();
+
+  return { data, error };
+}
+
+
 export async function updateDishStock(dishId, newStock, actorName = "Chef / Manager") {
   if (!isSupabaseConfigured()) return { data: null, error: "Not configured" };
 
@@ -79,6 +92,23 @@ export async function updateDishStock(dishId, newStock, actorName = "Chef / Mana
     const { data, error } = await supabase
       .from("dishes")
       .update({ live_stock: Math.max(0, parseInt(newStock, 10)) })
+      .eq("id", dishId)
+      .select()
+      .single();
+
+    return { data, error };
+  } catch (err) {
+    return { data: null, error: err };
+  }
+}
+
+export async function updateDishSysState(dishId, newSysState) {
+  if (!isSupabaseConfigured()) return { data: null, error: "Not configured" };
+
+  try {
+    const { data, error } = await supabase
+      .from("dishes")
+      .update({ sys_state: newSysState })
       .eq("id", dishId)
       .select()
       .single();
@@ -225,8 +255,9 @@ export async function recordAuditLog(logEntry) {
 export function subscribeToDishes(onUpdate) {
   if (!isSupabaseConfigured()) return { unsubscribe: () => {} };
 
+  const channelName = "dishes-live-changes-" + Math.random().toString(36).substring(7);
   const channel = supabase
-    .channel("dishes-live-changes")
+    .channel(channelName)
     .on(
       "postgres_changes",
       { event: "*", schema: "public", table: "dishes" },

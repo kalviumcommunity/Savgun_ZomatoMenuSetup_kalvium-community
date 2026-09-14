@@ -1,18 +1,31 @@
 {
-  "name": "fieasto-main",
+  "name": "fieasto",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "npx -y concurrently \"npm run frontend\" \"npm run backend\"",
-    "frontend": "cd frontend && npm run dev",
-    "backend": "cd backend && npm run dev",
-    "build": "cd frontend && npm run build",
-    "start": "cd frontend && npm run start",
-    "install:all": "cd frontend && npm install && cd ../backend && npm install",
-    "lint": "cd frontend && npm run lint",
-    "postinstall": "prisma skills sync || exit 0"
+    "dev": "next dev -p 3000",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@faker-js/faker": "^10.6.0",
+    "@supabase/supabase-js": "^2.113.0",
+    "dotenv": "^17.4.2",
+    "next": "16.3.4",
+    "pg": "^8.23.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
   },
   "devDependencies": {
-    "prisma": "^8.0.0-rc.14"
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "20.19.43",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "^19",
+    "babel-plugin-react-compiler": "1.0.0",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.4",
+    "tailwindcss": "^4",
+    "typescript": "^5"
   }
 }
