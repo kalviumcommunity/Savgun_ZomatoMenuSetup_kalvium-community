@@ -1,20 +1,39 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 import StatCard from "@/components/StatCard";
 import StockTable from "@/components/StockTable";
 import { getAuditLogs, getDishes } from "@/lib/db";
 
-export default async function Home() {
-  const { data: dishesData = [] } = await getDishes();
-  const { data: auditLogsData } = await getAuditLogs(50);
+export default function Home() {
+  const [dishes, setDishes] = useState<any[]>([]);
+  const [auditLogs, setAuditLogs] = useState<any[]>([]);
 
-  const dishes = dishesData ?? [];
-  const auditLogs = auditLogsData ?? [];
-  const activeDishes = dishes.length;
-  const lowStockAlerts = dishes.filter(
-    (dish) => dish.zomato_status !== "In Stock"
+  useEffect(() => {
+    async function loadDashboardData() {
+      const [{ data: dishesData = [] }, { data: auditLogsData = [] }] = await Promise.all([
+        getDishes(),
+        getAuditLogs(50),
+      ]);
+
+      setDishes(dishesData ?? []);
+      setAuditLogs(auditLogsData ?? []);
+    }
+
+    loadDashboardData();
+  }, []);
+
+  const activeDishes = dishes.filter(
+    (dish) => Number(dish.live_stock ?? 0) > 10
   ).length;
-  const ordersPlacedToday = auditLogs.length;
+  const lowStockAlerts = dishes.filter(
+    (dish) => Number(dish.live_stock ?? 0) <= 10
+  ).length;
+  const ordersPlacedToday = dishes.filter(
+    (dish) => (dish.sys_state || "Idle") === "Ready"
+  ).length;
   const revenueToday = dishes.reduce(
     (sum, dish) => sum + Number(dish.base_price || 0),
     0
@@ -78,11 +97,11 @@ export default async function Home() {
             <StatCard
               title="Orders Placed Today"
               value={ordersPlacedToday.toString()}
-              subtitle="Recent audit events synced"
+              subtitle="Ready dishes currently available"
               linkText={
                 ordersPlacedToday > 0
-                  ? `Across ${auditLogs.length} live updates`
-                  : "No recent order activity"
+                  ? `${ordersPlacedToday} dishes are marked Ready`
+                  : "No dishes are currently Ready"
               }
               linkColor="green"
               iconColor="green"
@@ -124,7 +143,7 @@ export default async function Home() {
             />
           </div>
 
-          <StockTable />
+          <StockTable onDishesChange={setDishes} />
         </div>
       </div>
     </div>

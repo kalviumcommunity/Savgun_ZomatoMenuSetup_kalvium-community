@@ -24,6 +24,10 @@ interface DishDraft {
   sysState: string;
 }
 
+interface StockTableProps {
+  onDishesChange?: (dishes: DishRow[]) => void;
+}
+
 interface CategoryOption {
   id: string;
   name: string;
@@ -71,7 +75,7 @@ const emptyNewDishForm: NewDishForm = {
   description: "",
 };
 
-export default function StockTable() {
+export default function StockTable({ onDishesChange }: StockTableProps) {
   const [dishes, setDishes] = useState<DishRow[]>([]);
   const [drafts, setDrafts] = useState<Record<string, DishDraft>>({});
   const [categories, setCategories] = useState<CategoryOption[]>([]);
@@ -111,6 +115,7 @@ export default function StockTable() {
       }));
 
       setDishes(mappedDishes);
+      onDishesChange?.(mappedDishes);
 
       const nextDrafts = mappedDishes.reduce<Record<string, DishDraft>>((acc, dish) => {
         acc[dish.id] = {
