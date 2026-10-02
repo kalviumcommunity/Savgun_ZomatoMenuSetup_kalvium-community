@@ -1,20 +1,30 @@
+// ==========================================
+// 1. IMPORTS & DEPENDENCIES
+// ==========================================
 import Link from "next/link";
 
+// ==========================================
+// 2. MAIN COMPONENT: HERO SECTION
+// ==========================================
+// Landing page hero section highlighting Zomato sync with an interactive mock UI
 export default function Hero() {
   return (
     <section className="hero" id="hero">
       <div className="container hero__inner">
-        {/* Left: Content */}
+        {/* Left Column: Heading, Value Proposition & CTA */}
         <div className="hero__content">
+          {/* Integration verification pill */}
           <div className="hero__badge" id="hero-badge">
             <span className="hero__badge-check">✓</span>
             Direct API Integration with Zomato Merchant Suite
           </div>
 
+          {/* Main title */}
           <h1 className="hero__title" id="hero-title">
             Your Menu, Always in Sync
           </h1>
 
+          {/* Description copy */}
           <p className="hero__description" id="hero-description">
             No more double orders or outdated pricing. Fieasto automatically
             bridges your restaurant kitchen&apos;s live inventory and pricing
@@ -22,6 +32,7 @@ export default function Hero() {
             in real-time.
           </p>
 
+          {/* Primary Call To Action */}
           <div className="hero__actions" id="hero-actions">
             <Link href="/login" className="btn-primary" id="btn-get-started">
               Get Started for Free
@@ -29,9 +40,10 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* Right: Mock Browser */}
+        {/* Right Column: Visual Mock Browser Demo */}
         <div className="hero__visual" id="hero-visual">
           <div className="mock-browser">
+            {/* Window frame with close/minimize/expand dots and URL */}
             <div className="mock-browser__header">
               <div className="mock-browser__dots">
                 <span className="mock-browser__dot mock-browser__dot--red"></span>
@@ -42,7 +54,7 @@ export default function Hero() {
             </div>
 
             <div className="mock-browser__body">
-              {/* Item Card */}
+              {/* Dish item showcase card */}
               <div className="mock-item">
                 <div className="mock-item__icon" aria-hidden="true">🍛</div>
                 <div className="mock-item__info">
@@ -55,7 +67,7 @@ export default function Hero() {
                 </div>
               </div>
 
-              {/* Inventory Counter */}
+              {/* Live stock counter simulation */}
               <div className="mock-inventory">
                 <span className="mock-inventory__label">
                   ZOMATO INVENTORY COUNTER
@@ -77,7 +89,7 @@ export default function Hero() {
                 </div>
               </div>
 
-              {/* Connection Status */}
+              {/* Tunnel connection indicator */}
               <div className="mock-connection">
                 <span className="mock-connection__label">
                   Live connection tunnel

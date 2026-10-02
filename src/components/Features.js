@@ -1,3 +1,7 @@
+// ==========================================
+// 1. STATIC DATA & FEATURE DEFINITIONS
+// ==========================================
+// Core product feature highlights displayed on landing page
 const FEATURES_DATA = [
   {
     id: "feature-inventory",
@@ -29,10 +33,15 @@ const FEATURES_DATA = [
   },
 ];
 
+// ==========================================
+// 2. MAIN COMPONENT: FEATURES SECTION
+// ==========================================
+// Renders the marketing feature cards grid
 export default function Features() {
   return (
     <section className="features" id="features">
       <div className="container">
+        {/* Section header heading and sublabel */}
         <div className="features__header">
           <p className="features__label" id="features-label">
             ENTERPRISE GRADE FEATURES
@@ -42,6 +51,7 @@ export default function Features() {
           </h2>
         </div>
 
+        {/* Feature cards responsive grid */}
         <div className="features__grid" id="features-grid">
           {FEATURES_DATA.map((feature) => (
             <div className="feature-card" key={feature.id} id={feature.id}>

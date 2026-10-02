@@ -1,5 +1,8 @@
 "use client";
 
+// ==========================================
+// 1. IMPORTS & DEPENDENCIES
+// ==========================================
 import { useEffect, useState } from "react";
 import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
@@ -7,10 +10,16 @@ import StatCard from "@/components/StatCard";
 import StockTable from "@/components/StockTable";
 import { getAuditLogs, getDishes } from "@/lib/db";
 
+// ==========================================
+// 2. MAIN COMPONENT: DASHBOARD CLIENT PAGE
+// ==========================================
+// Client-side dashboard page calculating dynamic stats and rendering inventory table
 export default function Home() {
+  // --- Component State ---
   const [dishes, setDishes] = useState<any[]>([]);
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
 
+  // --- Data Fetching Lifecycle ---
   useEffect(() => {
     async function loadDashboardData() {
       const [{ data: dishesData = [] }, { data: auditLogsData = [] }] = await Promise.all([
@@ -25,19 +34,29 @@ export default function Home() {
     loadDashboardData();
   }, []);
 
+  // --- Derived KPI Metrics ---
+  // Active dishes with stock above threshold
   const activeDishes = dishes.filter(
     (dish) => Number(dish.live_stock ?? 0) > 10
   ).length;
+
+  // Dishes requiring kitchen replenishment
   const lowStockAlerts = dishes.filter(
     (dish) => Number(dish.live_stock ?? 0) <= 10
   ).length;
+
+  // Ready orders available today
   const ordersPlacedToday = dishes.filter(
     (dish) => (dish.sys_state || "Idle") === "Ready"
   ).length;
+
+  // Gross estimated revenue
   const revenueToday = dishes.reduce(
     (sum, dish) => sum + Number(dish.base_price || 0),
     0
   );
+
+  // Highest priced dish
   const topSeller = dishes.reduce((best, dish) => {
     if (!best) return dish;
     return Number(dish.base_price || 0) > Number(best.base_price || 0)
@@ -45,14 +64,18 @@ export default function Home() {
       : best;
   }, dishes[0] ?? null);
 
+  // --- Render ---
   return (
     <div style={{ display: "flex", minHeight: "100vh" }}>
+      {/* Sidebar navigation */}
       <Sidebar />
 
+      {/* Main dashboard viewport */}
       <div className="main-content">
         <Header title="Inventory Hub" />
 
         <div className="dashboard-content">
+          {/* Top KPI statistics cards grid */}
           <div className="stats-grid">
             <StatCard
               title="Active Dishes"
@@ -143,6 +166,7 @@ export default function Home() {
             />
           </div>
 
+          {/* Interactive live stock table */}
           <StockTable />
         </div>
       </div>

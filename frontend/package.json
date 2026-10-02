@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "npx -y kill-port 3000 && next dev -p 3000",
-    "build": "next build",
-    "start": "next start",
+    "dev": "node api.js && npx -y kill-port 3000 && next dev -p 3000",
+    "build": "node api.js && next build",
+    "start": "node api.js && next start",
     "lint": "eslint"
   },
   "dependencies": {

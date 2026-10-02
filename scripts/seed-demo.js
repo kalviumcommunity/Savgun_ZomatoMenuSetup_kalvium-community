@@ -1,6 +1,11 @@
+import "dotenv/config";
 import { faker } from "@faker-js/faker";
-import { getSupabaseAdmin, isSupabaseConfigured, supabase } from "./lib/supabaseClient.js";
+import { getSupabaseAdmin, isSupabaseConfigured, supabase } from "../src/lib/supabaseClient.js";
 
+// ==========================================
+// 2. CONFIGURATION & CLI ARGUMENT PARSING
+// ==========================================
+// Default generation volume thresholds
 const DEFAULTS = {
   categories: 5,
   dishes: 20,
@@ -10,16 +15,18 @@ const DEFAULTS = {
   password: "Test@1234",
 };
 
+// Parse command line key=value flags (e.g., --dishes=30 --dry-run)
 const argv = Object.fromEntries(
   process.argv
-    .slice(2)
-    .map((entry) => {
-      const normalized = entry.startsWith("--") ? entry.slice(2) : entry;
-      const [key, value] = normalized.split("=");
-      return [key, value ?? true];
-    })
+  .slice(2)
+  .map((entry) => {
+    const normalized = entry.startsWith("--") ? entry.slice(2) : entry;
+    const [key, value] = normalized.split("=");
+    return [key, value ?? true];
+  })
 );
 
+// Consolidated seed execution options
 const options = {
   categories: Number(argv.categories ?? DEFAULTS.categories),
   dishes: Number(argv.dishes ?? DEFAULTS.dishes),
@@ -30,6 +37,7 @@ const options = {
   dryRun: argv["dry-run"] === true || argv["dryRun"] === true,
 };
 
+// Seed catalogs for realistic restaurant data
 const categoryNames = [
   "Appetizers",
   "Main Course",
@@ -51,6 +59,7 @@ const actions = [
   "MANUAL_OVERRIDE",
 ];
 
+// Helper to convert category name into URL-friendly slug
 function toSlug(value) {
   return value
     .toLowerCase()
@@ -59,6 +68,11 @@ function toSlug(value) {
     .replace(/(^-|-$)/g, "");
 }
 
+// ==========================================
+// 3. MOCK DATA GENERATORS
+// ==========================================
+
+// Generate category definitions
 function createCategories() {
   return Array.from({ length: Math.max(1, options.categories) }, (_, index) => {
     const name = categoryNames[index] ?? faker.commerce.productMaterial();
@@ -71,6 +85,7 @@ function createCategories() {
   });
 }
 
+// Generate restaurant staff user profiles
 function createUsers() {
   return Array.from({ length: Math.max(1, options.users) }, (_, index) => {
     const firstName = faker.person.firstName();
@@ -86,6 +101,7 @@ function createUsers() {
   });
 }
 
+// Generate dish inventory items linked to generated categories
 function createDishes(categories) {
   return Array.from({ length: Math.max(1, options.dishes) }, (_, index) => {
     const category = categories[index % categories.length];
@@ -108,6 +124,7 @@ function createDishes(categories) {
   });
 }
 
+// Generate discount and surge pricing rules linked to dishes
 function createPricingRules(dishes) {
   return Array.from({ length: Math.min(Math.max(1, options.pricingRules), dishes.length) }, (_, index) => {
     const dish = dishes[index % dishes.length];
@@ -129,6 +146,7 @@ function createPricingRules(dishes) {
   });
 }
 
+// Generate realistic audit activity log records
 function createAuditLogs(dishes) {
   return Array.from({ length: Math.max(1, options.auditLogs) }, (_, index) => {
     const dish = dishes[index % dishes.length];
@@ -152,6 +170,11 @@ function createAuditLogs(dishes) {
   });
 }
 
+// ==========================================
+// 4. DATABASE INSERT OPERATIONS
+// ==========================================
+
+// Upsert category records by slug
 async function insertCategories(categoryRows) {
   const { data, error } = await supabase
     .from("categories")
@@ -165,6 +188,7 @@ async function insertCategories(categoryRows) {
   return data;
 }
 
+// Upsert dish records by zomato_id
 async function insertDishes(dishRows) {
   const { data, error } = await supabase
     .from("dishes")
@@ -178,6 +202,7 @@ async function insertDishes(dishRows) {
   return data;
 }
 
+// Insert pricing rules
 async function insertPricingRules(ruleRows) {
   const { data, error } = await supabase
     .from("pricing_rules")
@@ -191,6 +216,7 @@ async function insertPricingRules(ruleRows) {
   return data;
 }
 
+// Insert audit log entries
 async function insertAuditLogs(logRows) {
   const { data, error } = await supabase
     .from("audit_logs")
@@ -204,10 +230,10 @@ async function insertAuditLogs(logRows) {
   return data;
 }
 
+// Create auth accounts via Supabase Admin API
 async function createAuthUsers(userRows) {
   try {
     const admin = getSupabaseAdmin();
-
     const createdUsers = [];
 
     for (const user of userRows) {
@@ -244,12 +270,17 @@ async function createAuthUsers(userRows) {
   }
 }
 
+// ==========================================
+// 5. MAIN EXECUTION CONTROLLER
+// ==========================================
 async function main() {
+  // Show help instructions if requested
   if (argv.help || argv.h) {
     console.log(`Usage: node seed-demo.js [--categories=5] [--dishes=20] [--users=5] [--auditLogs=12] [--pricingRules=4] [--password=Test@1234] [--dry-run]`);
     return;
   }
 
+  // Handle unconfigured Supabase environment by outputting preview
   if (!isSupabaseConfigured()) {
     console.warn("Supabase environment is not configured. Seed data cannot be inserted yet.");
     console.log("Previewing generated demo data instead:\n");
@@ -268,6 +299,7 @@ async function main() {
     return;
   }
 
+  // Perform full database seed pipeline
   const categories = createCategories();
   const insertedCategories = await insertCategories(categories);
 
@@ -283,6 +315,7 @@ async function main() {
   const generatedUsers = createUsers();
   const createdUsers = await createAuthUsers(generatedUsers);
 
+  // Print summary report
   console.log("✅ Demo seed complete.");
   console.log(`Inserted categories: ${insertedCategories.length}`);
   console.log(`Inserted dishes: ${insertedDishes.length}`);
@@ -310,6 +343,7 @@ async function main() {
   }
 }
 
+// Start seeding process
 main().catch((error) => {
   console.error("Seed failed:", error);
   process.exit(1);
