@@ -1,11 +1,18 @@
+// ==========================================
+// 1. IMPORTS & DEPENDENCIES
+// ==========================================
 import 'dotenv/config';
 import { supabase } from './lib/supabaseClient.js';
 import { faker } from '@faker-js/faker';
 
+// ==========================================
+// 2. SEED FUNCTION: MOCK DISHES
+// ==========================================
+// Generates and inserts 20 realistic fake dishes into the Supabase database
 async function seedData() {
   console.log('Seeding fake data...');
 
-  // 1. Fetch existing categories
+  // --- Step 1: Fetch Existing Categories ---
   const { data: categories, error: catError } = await supabase.from('categories').select('id');
   
   if (catError) {
@@ -18,6 +25,7 @@ async function seedData() {
     return;
   }
 
+  // --- Step 2: Generate Mock Dish Records ---
   const newDishes = [];
   const emojis = ['🍔', '🍕', '🥗', '🍗', '🍜', '🍣', '🍛', '🍰', '🍹', '🌮'];
   const statuses = ['In Stock', 'Low Stock', 'Sold Out'];
@@ -45,6 +53,7 @@ async function seedData() {
     });
   }
 
+  // --- Step 3: Insert Records into Database ---
   const { data, error } = await supabase.from('dishes').insert(newDishes).select();
 
   if (error) {
@@ -54,4 +63,7 @@ async function seedData() {
   }
 }
 
+// ==========================================
+// 3. SCRIPT EXECUTION
+// ==========================================
 seedData();

@@ -1,5 +1,8 @@
 "use client";
 
+// ==========================================
+// 1. IMPORTS & DEPENDENCIES
+// ==========================================
 import React, { useEffect, useState } from "react";
 import {
   createDish,
@@ -9,6 +12,10 @@ import {
   updateDishSysState,
 } from "@/lib/db";
 
+// ==========================================
+// 2. TYPES & INTERFACES
+// ==========================================
+// Model for a single dish row in the inventory table
 interface DishRow {
   id: string;
   name: string;
@@ -19,20 +26,24 @@ interface DishRow {
   sysState: string;
 }
 
+// Temporary in-memory draft state during field editing
 interface DishDraft {
   liveStock: number;
   sysState: string;
 }
 
+// Component props interface
 interface StockTableProps {
   onDishesChange?: (dishes: DishRow[]) => void;
 }
 
+// Category option item for dropdown select
 interface CategoryOption {
   id: string;
   name: string;
 }
 
+// Form state for creating a new menu dish item
 interface NewDishForm {
   name: string;
   zomatoId: string;
@@ -42,8 +53,13 @@ interface NewDishForm {
   description: string;
 }
 
+// ==========================================
+// 3. CONSTANTS & HELPER FUNCTIONS
+// ==========================================
+// Allowed kitchen processing system states
 const SYS_STATE_OPTIONS = ["Idle", "Reordering...", "Preparing", "Ready"];
 
+// Maps Zomato inventory stock status to CSS badge class
 function getStatusClass(status: string) {
   switch (status) {
     case "In Stock":
@@ -57,6 +73,7 @@ function getStatusClass(status: string) {
   }
 }
 
+// Computes consistent preview color hue based on dish ID and name
 function getPreviewHue(dishId: string, dishName: string) {
   const seed = Array.from(dishId + dishName).reduce(
     (total, char) => total + char.charCodeAt(0),
@@ -66,6 +83,7 @@ function getPreviewHue(dishId: string, dishName: string) {
   return seed % 360;
 }
 
+// Default empty form state for dish creation
 const emptyNewDishForm: NewDishForm = {
   name: "",
   zomatoId: "",
@@ -75,7 +93,12 @@ const emptyNewDishForm: NewDishForm = {
   description: "",
 };
 
+// ==========================================
+// 4. MAIN COMPONENT: STOCK TABLE
+// ==========================================
+// Renders live inventory stock monitoring table with inline updates and new dish creation
 export default function StockTable({ onDishesChange }: StockTableProps) {
+  // --- Component State ---
   const [dishes, setDishes] = useState<DishRow[]>([]);
   const [drafts, setDrafts] = useState<Record<string, DishDraft>>({});
   const [categories, setCategories] = useState<CategoryOption[]>([]);
@@ -85,6 +108,8 @@ export default function StockTable({ onDishesChange }: StockTableProps) {
   const [addingDish, setAddingDish] = useState(false);
   const [error, setError] = useState("");
 
+  // --- Data Fetching ---
+  // Load categories list for select dropdown
   async function loadCategories() {
     try {
       const { data } = await getCategories();
@@ -98,6 +123,7 @@ export default function StockTable({ onDishesChange }: StockTableProps) {
     }
   }
 
+  // Load dishes and initialize row draft state
   async function loadDishes() {
     setLoading(true);
     setError("");
@@ -117,6 +143,7 @@ export default function StockTable({ onDishesChange }: StockTableProps) {
       setDishes(mappedDishes);
       onDishesChange?.(mappedDishes);
 
+      // Initialize drafts for row editing
       const nextDrafts = mappedDishes.reduce<Record<string, DishDraft>>((acc, dish) => {
         acc[dish.id] = {
           liveStock: dish.liveStock,
@@ -135,11 +162,14 @@ export default function StockTable({ onDishesChange }: StockTableProps) {
     }
   }
 
+  // --- Lifecycle ---
   useEffect(() => {
     loadCategories();
     loadDishes();
   }, []);
 
+  // --- Handlers & Mutations ---
+  // Update in-memory draft values for a row
   const updateDraft = (
     dishId: string,
     patch: Partial<DishDraft>
@@ -155,6 +185,7 @@ export default function StockTable({ onDishesChange }: StockTableProps) {
     }));
   };
 
+  // Persist row stock and system state changes to database
   const saveDish = async (dish: DishRow, draftOverride?: DishDraft) => {
     const draft = draftOverride ?? drafts[dish.id] ?? { liveStock: dish.liveStock, sysState: dish.sysState };
 
@@ -206,6 +237,7 @@ export default function StockTable({ onDishesChange }: StockTableProps) {
     }
   };
 
+  // Handle new dish creation form submit
   const handleCreateDish = async (event: React.FormEvent) => {
     event.preventDefault();
 
@@ -252,8 +284,10 @@ export default function StockTable({ onDishesChange }: StockTableProps) {
     }
   };
 
+  // --- Render ---
   return (
     <div className="stock-section">
+      {/* Table header & filters */}
       <div className="stock-header">
         <h2 className="stock-title">Live Stock Monitoring</h2>
         <div className="stock-filters">
@@ -286,6 +320,7 @@ export default function StockTable({ onDishesChange }: StockTableProps) {
         </div>
       </div>
 
+      {/* New dish submission form */}
       <form
         onSubmit={handleCreateDish}
         style={{
@@ -393,12 +428,14 @@ export default function StockTable({ onDishesChange }: StockTableProps) {
         </div>
       </form>
 
+      {/* Error notification */}
       {error ? (
         <div className="stock-empty-state" style={{ marginBottom: 12, color: "#b91c1c" }}>
           {error}
         </div>
       ) : null}
 
+      {/* Table list view */}
       {loading ? (
         <div className="stock-empty-state">Loading live stock data...</div>
       ) : dishes.length === 0 ? (
@@ -428,6 +465,7 @@ export default function StockTable({ onDishesChange }: StockTableProps) {
 
               return (
                 <tr key={dish.id}>
+                  {/* Color box preview */}
                   <td>
                     <div className="dish-preview">
                       <div
@@ -440,15 +478,23 @@ export default function StockTable({ onDishesChange }: StockTableProps) {
                       />
                     </div>
                   </td>
+
+                  {/* Dish Name */}
                   <td>
                     <div className="dish-name">{dish.name}</div>
                   </td>
+
+                  {/* Zomato ID */}
                   <td>
                     <div className="dish-id">{dish.zomatoId}</div>
                   </td>
+
+                  {/* Category */}
                   <td>
                     <span className="dish-category">{dish.category}</span>
                   </td>
+
+                  {/* Stock Input */}
                   <td>
                     <input
                       type="number"
@@ -478,12 +524,16 @@ export default function StockTable({ onDishesChange }: StockTableProps) {
                       className="stock-input"
                     />
                   </td>
+
+                  {/* Zomato Status Badge */}
                   <td>
                     <span className={`status-badge ${getStatusClass(dish.zomatoStatus)}`}>
                       <span className="dot" />
                       {dish.zomatoStatus}
                     </span>
                   </td>
+
+                  {/* Kitchen Sys State Select */}
                   <td>
                     <select
                       value={draft.sysState}
@@ -509,6 +559,8 @@ export default function StockTable({ onDishesChange }: StockTableProps) {
                       ))}
                     </select>
                   </td>
+
+                  {/* Save button */}
                   <td>
                     <button
                       type="button"

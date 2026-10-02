@@ -1,8 +1,15 @@
 "use client";
 
+// ==========================================
+// 1. IMPORTS & DEPENDENCIES
+// ==========================================
 import React, { useEffect, useState } from "react";
 import { getAuditLogs } from "@/lib/db";
 
+// ==========================================
+// 2. TYPES & INTERFACES
+// ==========================================
+// Represents a single formatted audit log item for UI display
 interface AuditEntry {
   id: string;
   dishName: string;
@@ -14,6 +21,10 @@ interface AuditEntry {
   avatarBg: string;
 }
 
+// ==========================================
+// 3. HELPER FUNCTIONS
+// ==========================================
+// Converts timestamp string into human-readable relative time (e.g., "5 min ago")
 function formatTimeAgo(createdAt: string) {
   const diffInMinutes = Math.max(
     0,
@@ -38,13 +49,19 @@ function formatTimeAgo(createdAt: string) {
   return `${diffInDays} day${diffInDays === 1 ? "" : "s"} ago`;
 }
 
+// ==========================================
+// 4. MAIN COMPONENT: AUDIT TRAIL
+// ==========================================
 export default function AuditTrail() {
+  // --- Component State ---
   const [auditEntries, setAuditEntries] = useState<AuditEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // --- Data Fetching Lifecycle ---
   useEffect(() => {
     let isMounted = true;
 
+    // Fetch recent audit logs from database and map into display format
     async function loadAuditTrail() {
       setLoading(true);
 
@@ -79,18 +96,22 @@ export default function AuditTrail() {
 
     loadAuditTrail();
 
+    // Clean up mount guard
     return () => {
       isMounted = false;
     };
   }, []);
 
+  // --- Render ---
   return (
     <div className="audit-section">
+      {/* Section header & sync badge */}
       <div className="audit-header">
         <h2 className="audit-title">Live Audit Trail</h2>
         <span className="audit-api-badge">zomato-api-v2</span>
       </div>
 
+      {/* Loading, empty, or populated list */}
       {loading ? (
         <div className="audit-empty-state">Loading audit trail...</div>
       ) : auditEntries.length === 0 ? (
@@ -99,6 +120,7 @@ export default function AuditTrail() {
         <div className="audit-entries">
           {auditEntries.map((entry) => (
             <div key={entry.id} className="audit-entry">
+              {/* Actor avatar icon */}
               <div
                 className="audit-entry-avatar"
                 style={{ background: entry.avatarBg }}
@@ -117,6 +139,8 @@ export default function AuditTrail() {
                   <circle cx="12" cy="7" r="4" />
                 </svg>
               </div>
+
+              {/* Event details */}
               <div className="audit-entry-content">
                 <div className="audit-entry-top">
                   <span className="audit-entry-dish">{entry.dishName}</span>

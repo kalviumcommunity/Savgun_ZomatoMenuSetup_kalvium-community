@@ -1,7 +1,14 @@
 "use client";
 
+// ==========================================
+// 1. IMPORTS & DEPENDENCIES
+// ==========================================
 import React from "react";
 
+// ==========================================
+// 2. STATIC CONFIGURATION: NAVIGATION ITEMS
+// ==========================================
+// Sidebar navigation routes and their corresponding SVG icons
 const navItems = [
   {
     label: "Dashboard",
@@ -65,10 +72,14 @@ const navItems = [
   },
 ];
 
+// ==========================================
+// 3. MAIN COMPONENT: SIDEBAR
+// ==========================================
+// Fixed left sidebar with branding, navigation links, and restaurant credentials
 export default function Sidebar() {
   return (
     <aside className="sidebar">
-      {/* Logo */}
+      {/* Brand logo & sync badge */}
       <div className="sidebar-logo">
         <div className="sidebar-logo-icon">🍕</div>
         <div>
@@ -79,7 +90,7 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {/* Navigation */}
+      {/* Navigation menu list */}
       <nav className="sidebar-nav">
         {navItems.map((item) => (
           <div
@@ -92,7 +103,7 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      {/* Bottom Restaurant Info */}
+      {/* Active restaurant outlet footer */}
       <div className="sidebar-bottom">
         <div className="sidebar-restaurant">
           <div className="sidebar-restaurant-name">Tandoori Flames</div>

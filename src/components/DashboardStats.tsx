@@ -1,47 +1,71 @@
 "use client";
 
+// ==========================================
+// 1. IMPORTS & DEPENDENCIES
+// ==========================================
 import React, { useEffect, useState } from "react";
 import StatCard from "./StatCard";
 import { getDishes, getAuditLogs, subscribeToDishes } from "@/lib/db";
 
-export default function DashboardStats({ initialDishes, initialAuditLogs }: { initialDishes: any[], initialAuditLogs: any[] }) {
+// ==========================================
+// 2. TYPES & INTERFACES
+// ==========================================
+interface DashboardStatsProps {
+  initialDishes: any[];
+  initialAuditLogs: any[];
+}
+
+// ==========================================
+// 3. MAIN COMPONENT: DASHBOARD STATS
+// ==========================================
+export default function DashboardStats({ initialDishes, initialAuditLogs }: DashboardStatsProps) {
+  // --- Component State ---
   const [dishes, setDishes] = useState(initialDishes || []);
   const [auditLogs, setAuditLogs] = useState(initialAuditLogs || []);
 
+  // --- Real-time & Event Subscriptions ---
   useEffect(() => {
+    // Refresh local state with latest database records
     const handleUpdate = () => {
       getDishes().then(({ data }) => setDishes(data ?? []));
       getAuditLogs(50).then(({ data }) => setAuditLogs(data ?? []));
     };
 
-    // Listen for local manual updates from StockTable
+    // Listen for local custom window event emitted on manual table changes
     window.addEventListener("dishesUpdated", handleUpdate);
 
-    // Also listen for real-time remote updates from Supabase
+    // Listen for real-time Postgres changes from Supabase channel
     const sub = subscribeToDishes(handleUpdate);
     
+    // Clean up event listeners on unmount
     return () => {
       window.removeEventListener("dishesUpdated", handleUpdate);
       sub.unsubscribe();
     };
   }, []);
 
+  // --- Derived Metrics & Aggregations ---
+  // Count dishes with stock above low-stock threshold (> 10)
   const activeDishes = dishes.filter(
     (dish) => Number(dish.live_stock ?? 0) > 10
   ).length;
 
+  // Count dishes requiring replenishment (stock <= 10)
   const lowStockAlerts = dishes.filter(
     (dish) => Number(dish.live_stock ?? 0) <= 10
   ).length;
 
+  // Dishes with kitchen system state marked as "Ready"
   const readyDishes = dishes.filter((dish) => dish.sys_state === "Ready");
   const ordersPlacedToday = readyDishes.length;
 
+  // Sum gross value of ready dishes
   const revenueToday = readyDishes.reduce(
     (sum, dish) => sum + Number(dish.base_price || 0),
     0
   );
 
+  // Identify highest priced dish in current inventory
   const topSeller = dishes.reduce((best, dish) => {
     if (!best) return dish;
     return Number(dish.base_price || 0) > Number(best.base_price || 0)
@@ -49,8 +73,10 @@ export default function DashboardStats({ initialDishes, initialAuditLogs }: { in
       : best;
   }, dishes[0] ?? null);
 
+  // --- Render ---
   return (
     <div className="stats-grid">
+      {/* Active Dishes Metric Card */}
       <StatCard
         title="Active Dishes"
         value={activeDishes.toString()}
@@ -69,6 +95,8 @@ export default function DashboardStats({ initialDishes, initialAuditLogs }: { in
           </svg>
         }
       />
+
+      {/* Low Stock Alerts Metric Card */}
       <StatCard
         title="Low Stock Alerts"
         value={lowStockAlerts.toString()}
@@ -91,6 +119,8 @@ export default function DashboardStats({ initialDishes, initialAuditLogs }: { in
           </svg>
         }
       />
+
+      {/* Orders Placed Today Metric Card */}
       <StatCard
         title="Orders Placed Today"
         value={ordersPlacedToday.toString()}
@@ -113,6 +143,8 @@ export default function DashboardStats({ initialDishes, initialAuditLogs }: { in
           </svg>
         }
       />
+
+      {/* Revenue Today Metric Card */}
       <StatCard
         title="Revenue Today"
         value={`₹${revenueToday.toLocaleString("en-IN", {
