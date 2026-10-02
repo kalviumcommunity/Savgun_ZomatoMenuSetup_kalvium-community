@@ -1,3 +1,6 @@
+// ==========================================
+// 1. IMPORTS & DEPENDENCIES
+// ==========================================
 import express from "express";
 import cors from "cors";
 import { 
@@ -14,15 +17,19 @@ import {
 } from "./lib/db.js";
 import { supabase, isSupabaseConfigured } from "./lib/supabaseClient.js";
 
+// ==========================================
+// 2. APP CONFIGURATION & MIDDLEWARE
+// ==========================================
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
 
-// ------------------------------------------------------------------------------
-// HEALTH ROUTE (Migrated from src/app/api/health/route.js)
-// ------------------------------------------------------------------------------
+// ==========================================
+// 3. HEALTH CHECK ROUTE
+// ==========================================
+// Verifies connection to database and reports backend health status
 app.get("/api/health", async (req, res) => {
   const configured = isSupabaseConfigured();
 
@@ -66,9 +73,11 @@ app.get("/api/health", async (req, res) => {
   }
 });
 
-// ------------------------------------------------------------------------------
-// DISHES ROUTE (Migrated from src/app/api/dishes/route.js)
-// ------------------------------------------------------------------------------
+// ==========================================
+// 4. DISHES ROUTES
+// ==========================================
+
+// Get list of dishes with optional filtering by category or status
 app.get("/api/dishes", async (req, res) => {
   const categoryId = req.query.categoryId || undefined;
   const status = req.query.status || undefined;
@@ -85,6 +94,7 @@ app.get("/api/dishes", async (req, res) => {
   });
 });
 
+// Update live stock count for a dish
 app.patch("/api/dishes", async (req, res) => {
   try {
     const { dishId, liveStock, actor } = req.body;
@@ -108,6 +118,7 @@ app.patch("/api/dishes", async (req, res) => {
   }
 });
 
+// Get details for a single dish by ID
 app.get("/api/dishes/:id", async (req, res) => {
   const result = await getDishById(req.params.id);
   if (result.error) {
@@ -116,6 +127,7 @@ app.get("/api/dishes/:id", async (req, res) => {
   return res.status(200).json({ data: result.data });
 });
 
+// Update base price and record audit trail log
 app.patch("/api/dishes/:id/price", async (req, res) => {
   try {
     const { dishName, oldPrice, newPrice, actor, actorRole } = req.body;
@@ -132,9 +144,11 @@ app.patch("/api/dishes/:id/price", async (req, res) => {
   }
 });
 
-// ------------------------------------------------------------------------------
-// CATEGORIES ROUTES
-// ------------------------------------------------------------------------------
+// ==========================================
+// 5. CATEGORIES ROUTES
+// ==========================================
+
+// Retrieve all categories
 app.get("/api/categories", async (req, res) => {
   const result = await getCategories();
   if (result.error) {
@@ -143,9 +157,11 @@ app.get("/api/categories", async (req, res) => {
   return res.status(200).json({ data: result.data, isMock: result.isMock });
 });
 
-// ------------------------------------------------------------------------------
-// PRICING RULES ROUTES
-// ------------------------------------------------------------------------------
+// ==========================================
+// 6. PRICING RULES ROUTES
+// ==========================================
+
+// Get all active and inactive pricing rules
 app.get("/api/pricing-rules", async (req, res) => {
   const result = await getPricingRules();
   if (result.error) {
@@ -154,6 +170,7 @@ app.get("/api/pricing-rules", async (req, res) => {
   return res.status(200).json({ data: result.data, isMock: result.isMock });
 });
 
+// Create a new pricing rule
 app.post("/api/pricing-rules", async (req, res) => {
   try {
     const result = await createPricingRule(req.body);
@@ -166,6 +183,7 @@ app.post("/api/pricing-rules", async (req, res) => {
   }
 });
 
+// Toggle rule active status
 app.patch("/api/pricing-rules/:id/toggle", async (req, res) => {
   try {
     const { isActive } = req.body;
@@ -182,9 +200,11 @@ app.patch("/api/pricing-rules/:id/toggle", async (req, res) => {
   }
 });
 
-// ------------------------------------------------------------------------------
-// AUDIT LOGS ROUTES
-// ------------------------------------------------------------------------------
+// ==========================================
+// 7. AUDIT LOGS ROUTES
+// ==========================================
+
+// Retrieve recent audit logs
 app.get("/api/audit-logs", async (req, res) => {
   const limit = req.query.limit ? parseInt(req.query.limit, 10) : 20;
   const result = await getAuditLogs(limit);
@@ -194,6 +214,7 @@ app.get("/api/audit-logs", async (req, res) => {
   return res.status(200).json({ data: result.data, isMock: result.isMock });
 });
 
+// Record a new audit log entry
 app.post("/api/audit-logs", async (req, res) => {
   try {
     const result = await recordAuditLog(req.body);
@@ -206,6 +227,9 @@ app.post("/api/audit-logs", async (req, res) => {
   }
 });
 
+// ==========================================
+// 8. SERVER INITIALIZATION & LISTENER
+// ==========================================
 app.listen(PORT, () => {
   console.log(`Backend Express server is running on port ${PORT}`);
 });

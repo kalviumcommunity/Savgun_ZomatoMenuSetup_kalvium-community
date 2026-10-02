@@ -1,16 +1,29 @@
 "use client";
 
+// ==========================================
+// 1. IMPORTS & DEPENDENCIES
+// ==========================================
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
+// ==========================================
+// 2. TYPES & INTERFACES
+// ==========================================
+// Props interface for ZomatoLoginModal
 interface ZomatoLoginModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
+// ==========================================
+// 3. MAIN COMPONENT: ZOMATO LOGIN MODAL
+// ==========================================
+// Full-screen partner authentication modal with Supabase auth integration
 export default function ZomatoLoginModal({ isOpen, onClose }: ZomatoLoginModalProps) {
   const router = useRouter();
+
+  // --- Form State ---
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -18,6 +31,7 @@ export default function ZomatoLoginModal({ isOpen, onClose }: ZomatoLoginModalPr
   const [showPassword, setShowPassword] = useState(false);
   const [mounted, setMounted] = useState(false);
 
+  // --- Mounting & Transition Effects ---
   useEffect(() => {
     if (isOpen) {
       const timer = setTimeout(() => setMounted(true), 50);
@@ -29,9 +43,12 @@ export default function ZomatoLoginModal({ isOpen, onClose }: ZomatoLoginModalPr
 
   if (!isOpen) return null;
 
+  // --- Form Submission Handler ---
+  // Authenticates user with Supabase email/password credentials
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
+    // Validate inputs
     if (!email || !password) {
       setError("Please enter both email and password.");
       return;
@@ -41,6 +58,7 @@ export default function ZomatoLoginModal({ isOpen, onClose }: ZomatoLoginModalPr
       setLoading(true);
       setError("");
 
+      // Attempt Supabase password authentication
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -51,6 +69,7 @@ export default function ZomatoLoginModal({ isOpen, onClose }: ZomatoLoginModalPr
         return;
       }
 
+      // Redirect to dashboard on successful sign in
       router.push("/dashboard");
     } catch (err) {
       setError(
@@ -61,8 +80,10 @@ export default function ZomatoLoginModal({ isOpen, onClose }: ZomatoLoginModalPr
     }
   };
 
+  // --- Render ---
   return (
     <>
+      {/* Dynamic Keyframes and Input Styles */}
       <style>{`
         @keyframes login-gradient-shift {
           0% { background-position: 0% 50%; }
@@ -179,6 +200,7 @@ export default function ZomatoLoginModal({ isOpen, onClose }: ZomatoLoginModalPr
         }
       `}</style>
 
+      {/* Main modal backdrop container */}
       <div
         className="login-page-root"
         style={{
@@ -195,7 +217,7 @@ export default function ZomatoLoginModal({ isOpen, onClose }: ZomatoLoginModalPr
           padding: "20px",
         }}
       >
-        {/* Floating orbs */}
+        {/* Floating background glowing orbs */}
         <div style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden" }}>
           <div style={{
             position: "absolute", top: "10%", left: "15%", width: "300px", height: "300px",
@@ -214,7 +236,7 @@ export default function ZomatoLoginModal({ isOpen, onClose }: ZomatoLoginModalPr
           }} />
         </div>
 
-        {/* Main container */}
+        {/* Modal dialog card container */}
         <div style={{
           display: "flex",
           width: "100%",
@@ -234,7 +256,7 @@ export default function ZomatoLoginModal({ isOpen, onClose }: ZomatoLoginModalPr
           transition: "all 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
         }}>
 
-          {/* Left Panel - Hero */}
+          {/* Left Panel: Hero Graphic & Value Props */}
           <div style={{
             flex: "0 0 45%",
             position: "relative",
@@ -242,20 +264,19 @@ export default function ZomatoLoginModal({ isOpen, onClose }: ZomatoLoginModalPr
             display: "flex",
             flexDirection: "column",
           }}>
-            {/* Background image */}
+            {/* Background image & dark overlay */}
             <div style={{
               position: "absolute", inset: 0,
               backgroundImage: "url('/login-food.jpg')",
               backgroundSize: "cover",
               backgroundPosition: "center",
             }} />
-            {/* Dark overlay */}
             <div style={{
               position: "absolute", inset: 0,
               background: "linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.65) 50%, rgba(0,0,0,0.85) 100%)",
             }} />
 
-            {/* Content */}
+            {/* Left panel header & branding */}
             <div style={{
               position: "relative", zIndex: 2, padding: "36px 32px",
               display: "flex", flexDirection: "column", justifyContent: "space-between", height: "100%",
@@ -282,7 +303,7 @@ export default function ZomatoLoginModal({ isOpen, onClose }: ZomatoLoginModalPr
                 }}>PRO</span>
               </div>
 
-              {/* Hero text */}
+              {/* Headline */}
               <div style={{
                 animation: mounted ? "login-slide-up 0.8s ease-out 0.3s both" : "none",
               }}>
@@ -306,7 +327,7 @@ export default function ZomatoLoginModal({ isOpen, onClose }: ZomatoLoginModalPr
                 </p>
               </div>
 
-              {/* Trust indicators */}
+              {/* Security & trust features list */}
               <div style={{
                 display: "flex", flexDirection: "column", gap: "12px",
                 animation: mounted ? "login-slide-up 0.8s ease-out 0.5s both" : "none",
@@ -328,7 +349,7 @@ export default function ZomatoLoginModal({ isOpen, onClose }: ZomatoLoginModalPr
             </div>
           </div>
 
-          {/* Right Panel - Login Form */}
+          {/* Right Panel: Sign In Form */}
           <div style={{
             flex: "0 0 55%",
             display: "flex", alignItems: "center", justifyContent: "center",
@@ -339,7 +360,7 @@ export default function ZomatoLoginModal({ isOpen, onClose }: ZomatoLoginModalPr
               width: "100%", maxWidth: "380px",
               animation: mounted ? "login-slide-up 0.6s ease-out 0.2s both" : "none",
             }}>
-              {/* Welcome text */}
+              {/* Greeting */}
               <div style={{ marginBottom: "32px" }}>
                 <h2 style={{
                   fontSize: "26px", fontWeight: 700, color: "#fff",
@@ -355,8 +376,9 @@ export default function ZomatoLoginModal({ isOpen, onClose }: ZomatoLoginModalPr
                 </p>
               </div>
 
+              {/* Login Credentials Form */}
               <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-                {/* Email */}
+                {/* Email input field */}
                 <div>
                   <label style={{
                     display: "block", fontSize: "11px", fontWeight: 600,
@@ -386,7 +408,7 @@ export default function ZomatoLoginModal({ isOpen, onClose }: ZomatoLoginModalPr
                   </div>
                 </div>
 
-                {/* Password */}
+                {/* Password input field */}
                 <div>
                   <label style={{
                     display: "block", fontSize: "11px", fontWeight: 600,
@@ -419,6 +441,7 @@ export default function ZomatoLoginModal({ isOpen, onClose }: ZomatoLoginModalPr
                       className="login-toggle-pw"
                       onClick={() => setShowPassword(!showPassword)}
                       tabIndex={-1}
+                      aria-label={showPassword ? "Hide password" : "Show password"}
                     >
                       {showPassword ? (
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -436,7 +459,7 @@ export default function ZomatoLoginModal({ isOpen, onClose }: ZomatoLoginModalPr
                   </div>
                 </div>
 
-                {/* Error */}
+                {/* Error alert */}
                 {error && (
                   <div style={{
                     padding: "12px 14px", borderRadius: "10px",
@@ -454,7 +477,7 @@ export default function ZomatoLoginModal({ isOpen, onClose }: ZomatoLoginModalPr
                   </div>
                 )}
 
-                {/* Submit */}
+                {/* Sign In Submit Button */}
                 <button
                   type="submit"
                   disabled={loading}
@@ -479,7 +502,7 @@ export default function ZomatoLoginModal({ isOpen, onClose }: ZomatoLoginModalPr
                 </button>
               </form>
 
-              {/* Divider */}
+              {/* Visual Divider */}
               <div style={{
                 display: "flex", alignItems: "center", gap: "12px",
                 margin: "24px 0",
@@ -491,7 +514,7 @@ export default function ZomatoLoginModal({ isOpen, onClose }: ZomatoLoginModalPr
                 <div style={{ flex: 1, height: "1px", background: "rgba(255,255,255,0.06)" }} />
               </div>
 
-              {/* Demo hint */}
+              {/* Demo Helper Callout */}
               <div style={{
                 padding: "14px 16px", borderRadius: "12px",
                 background: "rgba(245,166,35,0.06)",
@@ -512,7 +535,7 @@ export default function ZomatoLoginModal({ isOpen, onClose }: ZomatoLoginModalPr
                 </p>
               </div>
 
-              {/* Back link */}
+              {/* Dismiss / Return to Home action */}
               <div style={{
                 marginTop: "24px", textAlign: "center" as const,
               }}>
