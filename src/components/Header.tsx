@@ -1,14 +1,26 @@
 "use client";
 
+// ==========================================
+// 1. IMPORTS & DEPENDENCIES
+// ==========================================
 import React from "react";
 
+// ==========================================
+// 2. TYPES & INTERFACES
+// ==========================================
+// Props interface for Header component
 interface HeaderProps {
   title?: string;
 }
 
+// ==========================================
+// 3. MAIN COMPONENT: HEADER
+// ==========================================
+// Renders top dashboard bar with page title, live sync status, search, and user profile
 export default function Header({ title = "Inventory Hub" }: HeaderProps) {
   return (
     <header className="header">
+      {/* Left section: Page title and live sync indicator */}
       <div className="header-left">
         <h1 className="header-title">{title}</h1>
         <div className="header-sync">
@@ -17,8 +29,9 @@ export default function Header({ title = "Inventory Hub" }: HeaderProps) {
         </div>
       </div>
 
+      {/* Right section: Search bar, notification alerts, and user avatar */}
       <div className="header-right">
-        {/* Search */}
+        {/* Global search input */}
         <div className="header-search">
           <svg
             viewBox="0 0 24 24"
@@ -34,7 +47,7 @@ export default function Header({ title = "Inventory Hub" }: HeaderProps) {
           <input type="text" placeholder="Search everything..." />
         </div>
 
-        {/* Notification Bell */}
+        {/* Notification bell button with unread dot */}
         <button className="header-icon-btn" id="notifications-btn" aria-label="Notifications">
           <svg
             width="18"
@@ -52,7 +65,7 @@ export default function Header({ title = "Inventory Hub" }: HeaderProps) {
           <span className="notification-dot" />
         </button>
 
-        {/* Avatar */}
+        {/* User initials profile avatar */}
         <div className="header-avatar" id="user-avatar">
           S
         </div>

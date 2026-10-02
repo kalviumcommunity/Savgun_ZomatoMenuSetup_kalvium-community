@@ -1,8 +1,15 @@
 "use client";
 
+// ==========================================
+// 1. IMPORTS & DEPENDENCIES
+// ==========================================
 import React, { useEffect, useState } from "react";
 import { getDishes } from "@/lib/db";
 
+// ==========================================
+// 2. TYPES & INTERFACES
+// ==========================================
+// UI model for pricing rules joined with dish details
 interface PricingRule {
   id: string;
   dishName: string;
@@ -17,6 +24,10 @@ interface PricingRule {
   statusLabel?: string;
 }
 
+// ==========================================
+// 3. HELPER FUNCTIONS
+// ==========================================
+// Truncates HH:MM:SS format to HH:MM for display
 function formatClockTime(value: string | null) {
   if (!value) {
     return "";
@@ -25,14 +36,21 @@ function formatClockTime(value: string | null) {
   return value.slice(0, 5);
 }
 
+// ==========================================
+// 4. MAIN COMPONENT: PRICING RULES
+// ==========================================
+// Displays table of menu dishes with interactive dynamic pricing configuration
 export default function PricingRules() {
+  // --- Component State ---
   const [rules, setRules] = useState<PricingRule[]>([]);
   const [expandedId, setExpandedId] = useState<string>("");
   const [loading, setLoading] = useState(true);
 
+  // --- Data Fetching Lifecycle ---
   useEffect(() => {
     let isMounted = true;
 
+    // Load dishes with joined pricing rules from database
     async function loadPricingRules() {
       setLoading(true);
 
@@ -43,9 +61,12 @@ export default function PricingRules() {
           return;
         }
 
+        // Map dishes and active pricing rules into view models
         const mappedRules = (data || []).map((dish: any) => {
           const activeRule = Array.isArray(dish.pricing_rules)
             ? dish.pricing_rules.find((rule: any) => rule.is_active) || null
+            : dish.pricing_rules && typeof dish.pricing_rules === "object"
+            ? dish.pricing_rules
             : null;
 
           const adjustmentPercentage = activeRule
@@ -78,6 +99,7 @@ export default function PricingRules() {
         });
 
         setRules(mappedRules);
+        // Expand first rule that has an active pricing rule configured
         const firstWithRule = mappedRules.find((rule) => rule.hasRule);
         setExpandedId(firstWithRule ? firstWithRule.id : "");
       } catch (error) {
@@ -98,8 +120,10 @@ export default function PricingRules() {
     };
   }, []);
 
+  // --- Render ---
   return (
     <div className="pricing-section">
+      {/* Section header and rule creation action button */}
       <div className="pricing-header">
         <h2 className="pricing-title">Active Pricing Rules</h2>
         <button className="pricing-create-btn" id="create-pricing-rule">
@@ -121,6 +145,7 @@ export default function PricingRules() {
         </button>
       </div>
 
+      {/* Loading, empty state, or rule entries table */}
       {loading ? (
         <div className="pricing-empty-state">Loading pricing rules...</div>
       ) : rules.length === 0 ? (
@@ -149,6 +174,7 @@ export default function PricingRules() {
 
               return (
                 <React.Fragment key={rule.id}>
+                  {/* Dish rule row */}
                   <tr className={isExpanded ? "expanded-row" : ""}>
                     <td>
                       <div className="pricing-dish">
@@ -206,6 +232,7 @@ export default function PricingRules() {
                     </td>
                   </tr>
 
+                  {/* Expanded detail card for active rule editing */}
                   {isExpanded && rule.hasRule && (
                     <tr>
                       <td colSpan={4} style={{ padding: 0 }}>
